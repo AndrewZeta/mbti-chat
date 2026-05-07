@@ -8,6 +8,7 @@ import {
   type IdentityVariant,
 } from "@/src/data/characters";
 import { parseChatStyleQueryParam, type ChatStyle } from "@/src/lib/chat-style";
+import { buildCharacterSystemPrompt } from "@/src/lib/characterPrompt";
 
 type Message = {
   id: string;
@@ -37,6 +38,7 @@ export type ChatBoxProps = {
   /** MBTI 옆에 표시할 핸들/아이디 (예: entj-seojun) */
   characterHandle: string;
   characterImageSrc: string | null;
+  characterGender?: string | null;
   characterDescription?: string | null;
   characterBodyInfo?: { height?: string; weight?: string } | null;
   identityVariant?: IdentityVariant;
@@ -240,6 +242,7 @@ export function ChatBox({
   characterMbti,
   characterHandle,
   characterImageSrc,
+  characterGender,
   characterDescription,
   characterBodyInfo,
   identityVariant,
@@ -263,6 +266,17 @@ export function ChatBox({
           heightText && weightText ? " · " : ""
         }${weightText ? `${weightText}kg` : ""}`
       : "";
+  const streamingAssistantIdRef = useRef<string | null>(null);
+  const systemPrompt = buildCharacterSystemPrompt({
+    characterName,
+    characterMbti,
+    identityVariant: effectiveIdentity,
+    characterGender,
+    characterDescription,
+    customDescription: characterDescription,
+    chatStyle: effectiveChatStyle,
+    bodyInfo: characterBodyInfo,
+  });
   const [messages, setMessages] = useState<Message[]>(() => [
     {
       id: "welcome",
@@ -282,6 +296,7 @@ export function ChatBox({
     },
   ]);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
   const imageUnoptimized =
@@ -298,30 +313,56 @@ export function ChatBox({
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  const send = useCallback(() => {
+  const send = useCallback(async () => {
     const trimmed = input.trim();
     if (!trimmed) return;
 
     setInput("");
-    setMessages((prev) => [
-      ...prev,
-      { id: createId(), role: "user", text: trimmed },
-      {
-        id: createId(),
-        role: "assistant",
-        text:
-          effectiveIdentity === "A"
-            ? descriptionText
-              ? "좋아, 네 마음을 이해했어. 네 설정까지 반영해서 안정적으로 풀어갈게."
-              : "좋아, 네 마음을 이해했어. 우리는 안정적으로 풀어갈 수 있어."
-            : effectiveIdentity === "T"
-              ? descriptionText
-                ? "그렇게 느꼈구나... 네 말이 계속 마음에 남아. 네 설정도 조심스럽게 고려할게. 조금 더 들려줄래?"
-                : "그렇게 느꼈구나... 네 말이 계속 마음에 남아. 조금 더 들려줄래?"
-              : "응답 테스트입니다",
-      },
-    ]);
-  }, [effectiveIdentity, descriptionText, input]);
+    const userId = createId();
+    const assistantId = createId();
+    const nextMessages: Message[] = [
+      ...messages,
+      { id: userId, role: "user" as const, text: trimmed },
+    ];
+    setMessages(nextMessages);
+
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: trimmed },
+          ],
+        }),
+      });
+      const data = await res.json();
+      const assistantText =
+        data?.choices?.[0]?.message?.content ??
+        "응답을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.";
+      setMessages((prev) =>
+        prev.concat({
+          id: assistantId,
+          role: "assistant",
+          text: assistantText,
+        }),
+      );
+    } catch {
+      setMessages((prev) =>
+        prev.concat({
+          id: assistantId,
+          role: "assistant",
+          text: "응답을 불러오지 못했어요. 네트워크나 인증 상태를 확인해 주세요.",
+        }),
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [input, messages, systemPrompt]);
 
   const hasInput = input.trim().length > 0;
   const mbtiLabel = effectiveIdentity
@@ -490,7 +531,7 @@ export function ChatBox({
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.nativeEvent.isComposing) {
                   e.preventDefault();
-                  send();
+                  void send();
                 }
               }}
               placeholder="Message..."
@@ -525,9 +566,10 @@ export function ChatBox({
           {hasInput ? (
             <button
               type="button"
-              onClick={send}
+              onClick={() => void send()}
               className={sendButtonClass}
               aria-label="전송"
+              disabled={isLoading}
             >
               <SendIcon />
             </button>
