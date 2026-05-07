@@ -27,20 +27,20 @@ export type CompatibilityResult = {
   pair: string;
   score: number;
   grade: CompatibilityGrade;
-  title: string;
-  subtitle: string;
-  summary: string;
+  title: { ko: string; en: string };
+  subtitle: { ko: string; en: string };
+  summary: { ko: string; en: string };
   trust: number;
   communication: number;
   responsibility: number;
   humor: number;
   myLoveStyle: {
-    title: string;
-    points: string[];
+    title: { ko: string; en: string };
+    points: { ko: string[]; en: string[] };
   };
   partnerLoveStyle: {
-    title: string;
-    points: string[];
+    title: { ko: string; en: string };
+    points: { ko: string[]; en: string[] };
   };
 };
 
@@ -68,57 +68,133 @@ const resultCopyByGrade: Record<
   Pick<CompatibilityResult, "title" | "subtitle" | "summary">
 > = {
   legend: {
-    title: "찰떡궁합",
-    subtitle: "타올랐다 사라지지 않는 강력한 끌림",
-    summary:
-      "서로의 매력이 빠르게 폭발하는 조합입니다. 감정, 대화, 생활 리듬이 잘 맞아 연애 초반부터 강한 몰입감을 만들 수 있어요.",
+    title: { ko: "찰떡궁합", en: "Perfect Match" },
+    subtitle: {
+      ko: "타올랐다 사라지지 않는 강력한 끌림",
+      en: "A powerful attraction that flares up and stays strong",
+    },
+    summary: {
+      ko: "서로의 매력이 빠르게 폭발하는 조합입니다. 감정, 대화, 생활 리듬이 잘 맞아 연애 초반부터 강한 몰입감을 만들 수 있어요.",
+      en: "Your chemistry sparks quickly. Emotions, communication, and daily rhythm align well, creating strong romantic immersion from the start.",
+    },
   },
   great: {
-    title: "천생연분에 가까운 관계",
-    subtitle: "서로를 자연스럽게 끌어올리는 궁합",
-    summary:
-      "큰 노력 없이도 서로의 장점을 알아봐 주는 관계입니다. 대화가 편하고, 함께 있을 때 안정감과 설렘이 함께 생길 수 있어요.",
+    title: { ko: "천생연분에 가까운 관계", en: "A Near Soulmate Pairing" },
+    subtitle: {
+      ko: "서로를 자연스럽게 끌어올리는 궁합",
+      en: "A match that naturally lifts each other up",
+    },
+    summary: {
+      ko: "큰 노력 없이도 서로의 장점을 알아봐 주는 관계입니다. 대화가 편하고, 함께 있을 때 안정감과 설렘이 함께 생길 수 있어요.",
+      en: "You notice each other's strengths without much effort. Conversation feels easy, and being together brings both comfort and excitement.",
+    },
   },
   normal: {
-    title: "안 맞는 듯 맞는 관계",
-    subtitle: "다름이 매력이 될 수 있는 조합",
-    summary:
-      "처음에는 성향 차이가 느껴질 수 있지만, 서로의 방식을 이해하면 오히려 균형 잡힌 관계가 될 수 있어요.",
+    title: { ko: "안 맞는 듯 맞는 관계", en: "Different, Yet Compatible" },
+    subtitle: {
+      ko: "다름이 매력이 될 수 있는 조합",
+      en: "A pair where differences can become charm",
+    },
+    summary: {
+      ko: "처음에는 성향 차이가 느껴질 수 있지만, 서로의 방식을 이해하면 오히려 균형 잡힌 관계가 될 수 있어요.",
+      en: "At first, your differences may stand out. But with mutual understanding, those differences can create a balanced relationship.",
+    },
   },
   danger: {
-    title: "작은 다툼 주의보",
-    subtitle: "끌림은 있지만 조율이 필요한 관계",
-    summary:
-      "서로에게 매력을 느낄 수 있지만, 표현 방식과 기대치가 달라 오해가 생기기 쉬운 조합입니다.",
+    title: { ko: "작은 다툼 주의보", en: "Watch for Friction" },
+    subtitle: {
+      ko: "끌림은 있지만 조율이 필요한 관계",
+      en: "Attraction exists, but alignment is needed",
+    },
+    summary: {
+      ko: "서로에게 매력을 느낄 수 있지만, 표현 방식과 기대치가 달라 오해가 생기기 쉬운 조합입니다.",
+      en: "You can feel attracted to each other, but differences in expression and expectations can lead to misunderstandings.",
+    },
   },
   worst: {
-    title: "지구 멸망의 길",
-    subtitle: "강한 끌림 뒤에 큰 충돌이 올 수 있는 궁합",
-    summary:
-      "서로의 방식이 너무 달라 피로감이 쌓이기 쉬운 관계입니다. 감정 표현, 생활 방식, 책임감의 기준을 반드시 맞춰야 해요.",
+    title: { ko: "지구 멸망의 길", en: "High-Risk Match" },
+    subtitle: {
+      ko: "강한 끌림 뒤에 큰 충돌이 올 수 있는 궁합",
+      en: "Strong attraction may be followed by major conflicts",
+    },
+    summary: {
+      ko: "서로의 방식이 너무 달라 피로감이 쌓이기 쉬운 관계입니다. 감정 표현, 생활 방식, 책임감의 기준을 반드시 맞춰야 해요.",
+      en: "Your styles are very different, so emotional fatigue can build up quickly. You need clear alignment on emotional expression, lifestyle, and responsibility.",
+    },
   },
 };
 
-export const mbtiLoveStyleTitles: Record<MbtiType, string> = {
-  INFP: "감성 깊은 이상주의자 연애 스타일",
-  ENFP: "밝고 자유로운 댕댕이 연애 스타일",
-  INFJ: "깊은 관계를 원하는 진심형 연애 스타일",
-  ENFJ: "상대를 성장시키는 리더형 연애 스타일",
-  INTJ: "미래를 설계하는 전략가 연애 스타일",
-  ENTJ: "확신 있게 이끄는 승부사 연애 스타일",
-  INTP: "호기심 많은 분석가 연애 스타일",
-  ENTP: "말맛과 자극을 즐기는 토론가 연애 스타일",
-  ISFP: "잔잔하게 스며드는 감성가 연애 스타일",
-  ESFP: "지금 이 순간을 즐기는 애교형 연애 스타일",
-  ISTP: "말보다 행동으로 보여주는 실용가 연애 스타일",
-  ESTP: "직진하는 에너지형 연애 스타일",
-  ISFJ: "조용히 챙겨주는 헌신형 연애 스타일",
-  ESFJ: "따뜻하게 분위기를 만드는 다정형 연애 스타일",
-  ISTJ: "신뢰를 쌓아가는 책임형 연애 스타일",
-  ESTJ: "든든하게 이끄는 현실형 연애 스타일",
+export const mbtiLoveStyleTitles: Record<
+  MbtiType,
+  { ko: string; en: string }
+> = {
+  INFP: {
+    ko: "감성 깊은 이상주의자 연애 스타일",
+    en: "romantic style: deep and idealistic",
+  },
+  ENFP: {
+    ko: "밝고 자유로운 댕댕이 연애 스타일",
+    en: "romantic style: bright and free-spirited",
+  },
+  INFJ: {
+    ko: "깊은 관계를 원하는 진심형 연애 스타일",
+    en: "romantic style: sincere and depth-seeking",
+  },
+  ENFJ: {
+    ko: "상대를 성장시키는 리더형 연애 스타일",
+    en: "romantic style: growth-oriented leader",
+  },
+  INTJ: {
+    ko: "미래를 설계하는 전략가 연애 스타일",
+    en: "romantic style: future-planning strategist",
+  },
+  ENTJ: {
+    ko: "확신 있게 이끄는 승부사 연애 스타일",
+    en: "romantic style: confident and driven",
+  },
+  INTP: {
+    ko: "호기심 많은 분석가 연애 스타일",
+    en: "romantic style: curious analyst",
+  },
+  ENTP: {
+    ko: "말맛과 자극을 즐기는 토론가 연애 스타일",
+    en: "romantic style: witty debater",
+  },
+  ISFP: {
+    ko: "잔잔하게 스며드는 감성가 연애 스타일",
+    en: "romantic style: gentle and artistic",
+  },
+  ESFP: {
+    ko: "지금 이 순간을 즐기는 애교형 연애 스타일",
+    en: "romantic style: playful in-the-moment",
+  },
+  ISTP: {
+    ko: "말보다 행동으로 보여주는 실용가 연애 스타일",
+    en: "romantic style: practical actions over words",
+  },
+  ESTP: {
+    ko: "직진하는 에너지형 연애 스타일",
+    en: "romantic style: direct and energetic",
+  },
+  ISFJ: {
+    ko: "조용히 챙겨주는 헌신형 연애 스타일",
+    en: "romantic style: quietly devoted",
+  },
+  ESFJ: {
+    ko: "따뜻하게 분위기를 만드는 다정형 연애 스타일",
+    en: "romantic style: warm and caring",
+  },
+  ISTJ: {
+    ko: "신뢰를 쌓아가는 책임형 연애 스타일",
+    en: "romantic style: responsible and reliable",
+  },
+  ESTJ: {
+    ko: "든든하게 이끄는 현실형 연애 스타일",
+    en: "romantic style: grounded and dependable",
+  },
 };
 
-const mbtiLoveStyleTemplates: Record<MbtiType, string[]> = {
+const mbtiLoveStyleTemplatesKo: Record<MbtiType, string[]> = {
   INFP: [
     "감정의 결을 세심하게 읽고 관계의 의미를 깊게 생각해요.",
     "확신이 생기면 오래 가는 헌신형 연애를 해요.",
@@ -216,6 +292,114 @@ const mbtiLoveStyleTemplates: Record<MbtiType, string[]> = {
     "감정 위로보다 실질적인 도움을 먼저 주는 편이에요.",
   ],
 };
+
+const mbtiLoveStyleTemplatesEn: Record<MbtiType, string[]> = {
+  INFP: [
+    "Reads emotional nuance carefully and values meaning in relationships.",
+    "Once committed, tends to stay deeply devoted.",
+    "Can lose interest when affection feels insincere.",
+    "Loves building a unique shared story together.",
+  ],
+  ENFP: [
+    "Expresses excitement openly and brightens the mood fast.",
+    "Actively cheers for a partner's potential and growth.",
+    "Prefers honest conversation over awkward silence.",
+    "Feels more connected through new dates and experiences.",
+  ],
+  INFJ: [
+    "Starts carefully, but commits with depth once in.",
+    "Quickly notices emotional shifts and responds with care.",
+    "Cares strongly about value alignment in love.",
+    "Becomes steady and secure as trust accumulates.",
+  ],
+  ENFJ: [
+    "Naturally supports a partner to shine brighter.",
+    "Tries to resolve conflict through dialogue.",
+    "Prefers relationships where both people grow.",
+    "Shows affection proactively and leads the vibe.",
+  ],
+  INTJ: [
+    "Checks consistency and reliability before emotions.",
+    "Shows thoughtful, planned care once trust is built.",
+    "Prefers clear agreements over emotional games.",
+    "Feels stable when goals and independence are respected.",
+  ],
+  ENTJ: [
+    "Tends to lead with practical solutions in relationships.",
+    "Likes goal-oriented relationships that grow forward.",
+    "May sound blunt under heavy emotional friction.",
+    "Protects the relationship responsibly after trust forms.",
+  ],
+  INTP: [
+    "Shows affection through deep understanding over time.",
+    "Opens up emotionally through logical conversation.",
+    "May seem reserved, but feelings run deep.",
+    "Relationship feels best with mutual personal space.",
+  ],
+  ENTP: [
+    "Builds closeness quickly through playful conversation.",
+    "Enjoys relationships with novelty and stimulation.",
+    "Handles disagreement like constructive debate.",
+    "Can feel distant if things stay monotonous too long.",
+  ],
+  ISFP: [
+    "Shows care quietly through actions more than words.",
+    "Values emotional comfort and atmosphere in love.",
+    "Shines most in low-pressure, gentle communication.",
+    "Good at creating happiness in everyday moments.",
+  ],
+  ESFP: [
+    "Uses warm reactions to make a partner feel good.",
+    "Affection grows through shared fun in the moment.",
+    "Prefers immediate feedback and clear expression.",
+    "Follows emotional flow more than strict rules.",
+  ],
+  ISTP: [
+    "Calm but dependable when it truly matters.",
+    "Prefers comfortable space over emotional pressure.",
+    "Builds trust through practical help and action.",
+    "Relationship satisfaction rises when freedom is respected.",
+  ],
+  ESTP: [
+    "Direct expression speeds up relationship momentum.",
+    "Strong execution in handling real-life issues.",
+    "Spontaneous fun increases closeness quickly.",
+    "Can be less sensitive in fine emotional tuning.",
+  ],
+  ISFJ: [
+    "Creates stability through steady care and responsibility.",
+    "Good at matching a partner's daily rhythm.",
+    "Prefers quiet coordination over dramatic conflict.",
+    "Feels more secure when appreciation is expressed.",
+  ],
+  ESFJ: [
+    "Values emotional exchange and daily sharing highly.",
+    "Sincerely caring and attentive to a partner.",
+    "Can feel anxious when the relationship seems neglected.",
+    "Affection deepens with warm, frequent feedback.",
+  ],
+  ISTJ: [
+    "Prefers careful starts and long-term commitment.",
+    "Takes promises and responsibility very seriously.",
+    "Less expressive, but highly consistent in action.",
+    "Feels comfortable in stable and predictable relationships.",
+  ],
+  ESTJ: [
+    "Leads realistically with clear standards.",
+    "Moves quickly to organize and solve problems.",
+    "Most satisfied when roles and responsibility are clear.",
+    "Offers practical help before emotional soothing.",
+  ],
+};
+
+const mbtiLoveStyleTemplates: Record<MbtiType, { ko: string[]; en: string[] }> =
+  mbtiTypes.reduce((acc, mbti) => {
+    acc[mbti] = {
+      ko: mbtiLoveStyleTemplatesKo[mbti],
+      en: mbtiLoveStyleTemplatesEn[mbti],
+    };
+    return acc;
+  }, {} as Record<MbtiType, { ko: string[]; en: string[] }>);
 
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
@@ -411,11 +595,17 @@ export function getCompatibility(
     responsibility: metrics.responsibility,
     humor: metrics.humor,
     myLoveStyle: {
-      title: `나는 ${mbtiLoveStyleTitles[myMbti]}`,
+      title: {
+        ko: `나는 ${mbtiLoveStyleTitles[myMbti].ko}`,
+        en: `My ${mbtiLoveStyleTitles[myMbti].en}`,
+      },
       points: mbtiLoveStyleTemplates[myMbti],
     },
     partnerLoveStyle: {
-      title: `상대는 ${mbtiLoveStyleTitles[partnerMbti]}`,
+      title: {
+        ko: `상대는 ${mbtiLoveStyleTitles[partnerMbti].ko}`,
+        en: `Partner's ${mbtiLoveStyleTitles[partnerMbti].en}`,
+      },
       points: mbtiLoveStyleTemplates[partnerMbti],
     },
   };

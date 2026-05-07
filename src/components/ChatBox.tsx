@@ -9,6 +9,8 @@ import {
 } from "@/src/data/characters";
 import { parseChatStyleQueryParam, type ChatStyle } from "@/src/lib/chat-style";
 import { buildCharacterSystemPrompt } from "@/src/lib/characterPrompt";
+import type { Language } from "@/src/lib/language";
+import TEXT from "@/src/lib/text";
 
 type Message = {
   id: string;
@@ -43,6 +45,7 @@ export type ChatBoxProps = {
   characterBodyInfo?: { height?: string; weight?: string } | null;
   identityVariant?: IdentityVariant;
   chatStyle?: ChatStyle;
+  language?: Language;
   fallbackHref?: string;
 };
 
@@ -247,6 +250,7 @@ export function ChatBox({
   characterBodyInfo,
   identityVariant,
   chatStyle,
+  language = "ko",
   fallbackHref = "/characters",
 }: ChatBoxProps) {
   const router = useRouter();
@@ -275,24 +279,44 @@ export function ChatBox({
     characterDescription,
     customDescription: characterDescription,
     chatStyle: effectiveChatStyle,
+    language,
     bodyInfo: characterBodyInfo,
   });
+  const t = TEXT[language];
   const [messages, setMessages] = useState<Message[]>(() => [
     {
       id: "welcome",
       role: "assistant",
       text:
-        effectiveIdentity === "A"
-          ? `안녕, 나는 ${characterName}${introParticle}. 오늘은 차분하게 이야기 나눠보자.${
-              descriptionText ? " 네 설정도 기억하고 안정적으로 맞춰갈게." : ""
-            }`
-          : effectiveIdentity === "T"
-            ? `안녕, 나는 ${characterName}${introParticle}. 오늘은 무슨 얘기 하고 싶어? 네 마음을 놓치고 싶지 않아.${
-                descriptionText ? " 네 설정도 조심스럽게 고려할게." : ""
+        language === "en"
+          ? effectiveIdentity === "A"
+            ? `Hey, I'm ${characterName}. Let's talk calmly today.${
+                descriptionText
+                  ? " I'll keep your setup in mind and stay steady with you."
+                  : ""
               }`
-            : `안녕, 나는 ${characterName}${introParticle}. 오늘은 무슨 얘기 하고 싶어?${
-                descriptionText ? " 네 설정을 바탕으로 대화해볼게." : ""
-              }`,
+            : effectiveIdentity === "T"
+              ? `Hey, I'm ${characterName}. What do you want to talk about today?${
+                  descriptionText
+                    ? " I'll be careful with your setup and how you're feeling."
+                    : ""
+                }`
+              : `Hey, I'm ${characterName}. What do you want to talk about today?${
+                  descriptionText
+                    ? " I'll chat based on the setup you gave me."
+                    : ""
+                }`
+          : effectiveIdentity === "A"
+            ? `안녕, 나는 ${characterName}${introParticle}. 오늘은 차분하게 이야기 나눠보자.${
+                descriptionText ? " 네 설정도 기억하고 안정적으로 맞춰갈게." : ""
+              }`
+            : effectiveIdentity === "T"
+              ? `안녕, 나는 ${characterName}${introParticle}. 오늘은 무슨 얘기 하고 싶어? 네 마음을 놓치고 싶지 않아.${
+                  descriptionText ? " 네 설정도 조심스럽게 고려할게." : ""
+                }`
+              : `안녕, 나는 ${characterName}${introParticle}. 오늘은 무슨 얘기 하고 싶어?${
+                  descriptionText ? " 네 설정을 바탕으로 대화해볼게." : ""
+                }`,
     },
   ]);
   const [input, setInput] = useState("");
@@ -343,7 +367,7 @@ export function ChatBox({
       const data = await res.json();
       const assistantText =
         data?.choices?.[0]?.message?.content ??
-        "응답을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.";
+        t.fetchFail;
       setMessages((prev) =>
         prev.concat({
           id: assistantId,
@@ -356,13 +380,13 @@ export function ChatBox({
         prev.concat({
           id: assistantId,
           role: "assistant",
-          text: "응답을 불러오지 못했어요. 네트워크나 인증 상태를 확인해 주세요.",
+          text: t.networkFail,
         }),
       );
     } finally {
       setIsLoading(false);
     }
-  }, [input, messages, systemPrompt]);
+  }, [input, messages, systemPrompt, t.fetchFail, t.networkFail]);
 
   const hasInput = input.trim().length > 0;
   const mbtiLabel = effectiveIdentity
@@ -432,7 +456,7 @@ export function ChatBox({
           className={`p-2 rounded-full transition ${hoverClass} ${
             isTiktok ? "bg-[#1f1f1f] text-white" : ""
           }`}
-          aria-label="뒤로"
+          aria-label={t.back}
         >
           <BackChevronIcon />
         </button>
@@ -478,14 +502,14 @@ export function ChatBox({
             <button
               type="button"
               className={`flex h-10 w-10 items-center justify-center rounded-full ${hoverClass}`}
-              aria-label="음성 통화"
+              aria-label={t.phone}
             >
               <PhoneIcon />
             </button>
             <button
               type="button"
               className={`flex h-10 w-10 items-center justify-center rounded-full ${hoverClass}`}
-              aria-label="영상 통화"
+              aria-label={t.video}
             >
               <VideoIcon />
             </button>
@@ -518,7 +542,7 @@ export function ChatBox({
           <button
             type="button"
             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${hoverClass}`}
-            aria-label="카메라"
+            aria-label={t.camera}
           >
             <CameraIcon />
           </button>
@@ -534,29 +558,29 @@ export function ChatBox({
                   void send();
                 }
               }}
-              placeholder="Message..."
+              placeholder={t.placeholder}
               className={inputClass}
-              aria-label="메시지 입력"
+              aria-label={t.messageInput}
             />
             <div className="flex shrink-0 items-center gap-0.5">
               <button
                 type="button"
                 className={`flex h-9 w-9 items-center justify-center rounded-full ${isTiktok ? "hover:bg-gray-700/80" : "hover:bg-gray-200/80"}`}
-                aria-label="마이크"
+                aria-label={t.mic}
               >
                 <MicIcon />
               </button>
               <button
                 type="button"
                 className={`flex h-9 w-9 items-center justify-center rounded-full ${isTiktok ? "hover:bg-gray-700/80" : "hover:bg-gray-200/80"}`}
-                aria-label="사진"
+                aria-label={t.image}
               >
                 <ImageIcon />
               </button>
               <button
                 type="button"
                 className={`flex h-9 w-9 items-center justify-center rounded-full ${isTiktok ? "hover:bg-gray-700/80" : "hover:bg-gray-200/80"}`}
-                aria-label="이모지"
+                aria-label={t.emoji}
               >
                 <EmojiIcon />
               </button>
@@ -568,7 +592,7 @@ export function ChatBox({
               type="button"
               onClick={() => void send()}
               className={sendButtonClass}
-              aria-label="전송"
+              aria-label={t.send}
               disabled={isLoading}
             >
               <SendIcon />

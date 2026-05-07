@@ -2,15 +2,19 @@
 
 import { useRouter } from "next/navigation";
 import { Suspense, useState } from "react";
+import { useLanguage } from "@/src/components/LanguageProvider";
 import { CompatibilityPanel } from "@/src/components/CompatibilityPanel";
 import { CustomCharacterForm } from "@/src/components/CustomCharacterForm";
 import { MbtiCharacterExplorer } from "@/src/components/MbtiCharacterExplorer";
 import { characters } from "@/src/data/characters";
+import TEXT from "@/src/lib/text";
 
 type CharactersTab = "chat" | "compatibility";
 
 export default function CharactersPage() {
   const router = useRouter();
+  const { language } = useLanguage();
+  const t = TEXT[language];
   const [activeTab, setActiveTab] = useState<CharactersTab>("chat");
 
   return (
@@ -26,12 +30,12 @@ export default function CharactersPage() {
             }
           }}
           className="p-2 rounded-full hover:bg-gray-100 transition text-xl dark:hover:bg-zinc-800"
-          aria-label="뒤로"
+          aria-label={t.back}
         >
           ←
         </button>
         <h1 className="text-lg font-semibold text-rose-950 dark:text-rose-50">
-          캐릭터 선택
+          {t.charactersTitle}
         </h1>
       </header>
 
@@ -46,7 +50,7 @@ export default function CharactersPage() {
                 : "text-gray-500 hover:text-purple-500 dark:text-zinc-400 dark:hover:text-purple-300"
             }`}
           >
-            채팅
+            {t.tabChat}
           </button>
           <button
             type="button"
@@ -57,15 +61,15 @@ export default function CharactersPage() {
                 : "text-gray-500 hover:text-purple-500 dark:text-zinc-400 dark:hover:text-purple-300"
             }`}
           >
-            궁합
+            {t.tabCompatibility}
           </button>
         </section>
 
         <div>
           <p className="text-sm text-rose-900/70 dark:text-rose-200/70">
             {activeTab === "chat"
-              ? "나만의 캐릭터를 만들어 시작하거나, 아래 MBTI 책갈피에서 기본 프로필을 골라 대화해 보세요."
-              : "내 MBTI와 상대 MBTI를 입력해 궁합 결과를 확인해 보세요."}
+              ? t.chatGuide
+              : t.compatibilityGuide}
           </p>
         </div>
 
@@ -75,12 +79,12 @@ export default function CharactersPage() {
 
             <section className="space-y-4">
               <h2 className="text-lg font-semibold text-rose-950 dark:text-rose-100">
-                기본 MBTI 캐릭터
+                {t.defaultMbtiCharacters}
               </h2>
               <Suspense
                 fallback={
                   <div className="flex min-h-[28rem] items-center justify-center rounded-3xl border border-pink-100/60 bg-white/80 text-sm text-gray-500 dark:border-pink-900/30 dark:bg-zinc-900/80 dark:text-zinc-400">
-                    불러오는 중…
+                    {t.loading}
                   </div>
                 }
               >

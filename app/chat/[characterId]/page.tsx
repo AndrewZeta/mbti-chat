@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { ChatBox } from "@/src/components/ChatBox";
+import { CharacterChatClient } from "@/src/components/CharacterChatClient";
 import { getCharacterById, parseIdentityQueryParam } from "@/src/data/characters";
 import { parseChatStyleQueryParam } from "@/src/lib/chat-style";
 
@@ -33,11 +33,12 @@ export default async function ChatPage({ params, searchParams }: Props) {
       <div
         className={`mx-auto my-0 flex min-h-screen w-full max-w-[430px] flex-col overflow-hidden ${frameBg} shadow-none md:my-8 md:min-h-[calc(100vh-4rem)] md:rounded-[36px] md:shadow-lg`}
       >
-        <ChatBox
+        <CharacterChatClient
           characterName={character.name}
           characterMbti={character.mbti}
           characterHandle={character.id}
           characterImageSrc={character.image}
+          characterGender={character.gender}
           identityVariant={identityVariant}
           chatStyle={chatStyle}
         />

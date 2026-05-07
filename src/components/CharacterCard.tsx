@@ -1,11 +1,20 @@
+"use client";
+
 import Link from "next/link";
+import { useLanguage } from "@/src/components/LanguageProvider";
 import type { Character } from "@/src/data/characters";
+import TEXT from "@/src/lib/text";
 
 type Props = {
   character: Character;
 };
 
 export function CharacterCard({ character }: Props) {
+  const { language } = useLanguage();
+  const t = TEXT[language];
+  const localizedGender = character.gender === "남성" ? t.male : t.female;
+  const localizedName = character.name[language];
+
   return (
     <Link
       href={`/chat/${character.id}`}
@@ -16,14 +25,14 @@ export function CharacterCard({ character }: Props) {
           {character.mbti}
         </span>
         <span className="text-xs text-rose-800/70 dark:text-rose-200/60">
-          {character.gender}
+          {localizedGender}
         </span>
       </div>
       <h2 className="text-lg font-semibold text-zinc-900 group-hover:text-violet-700 dark:text-zinc-50 dark:group-hover:text-violet-300">
-        {character.name}
+        {localizedName}
       </h2>
       <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        {character.tagline}
+        {character.description[language]}
       </p>
     </Link>
   );

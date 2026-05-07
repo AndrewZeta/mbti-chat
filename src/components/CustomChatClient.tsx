@@ -10,8 +10,10 @@ import {
 } from "@/src/lib/custom-character-storage";
 import { parseIdentityQueryParam } from "@/src/data/characters";
 import { parseChatStyleQueryParam } from "@/src/lib/chat-style";
+import { useLanguage } from "@/src/components/LanguageProvider";
 
 export function CustomChatClient() {
+  const { language } = useLanguage();
   const searchParams = useSearchParams();
   const identityFromUrl = parseIdentityQueryParam(searchParams.get("identity"));
   const chatStyleFromUrl = parseChatStyleQueryParam(searchParams.get("style"));
@@ -50,7 +52,7 @@ export function CustomChatClient() {
     return (
       <div className={outerBg}>
         <div className={`mx-auto my-0 flex min-h-screen w-full max-w-[430px] items-center justify-center ${frameBg} text-sm ${chatStyleFromUrl === "tiktok" ? "text-gray-300" : "text-gray-500"} shadow-none md:my-8 md:min-h-[calc(100vh-4rem)] md:rounded-[36px] md:shadow-lg`}>
-          불러오는 중…
+          {language === "en" ? "Loading..." : "불러오는 중…"}
         </div>
       </div>
     );
@@ -66,10 +68,12 @@ export function CustomChatClient() {
               characterMbti={mbtiFromUrl}
               characterHandle="custom"
               characterImageSrc={null}
+              characterGender={null}
               characterDescription={null}
               characterBodyInfo={null}
               identityVariant={identityFromUrl}
               chatStyle={chatStyleFromUrl}
+              language={language}
             />
           </div>
         </div>
@@ -79,13 +83,15 @@ export function CustomChatClient() {
       <div className={outerBg}>
         <div className={`mx-auto my-0 flex min-h-screen w-full max-w-[430px] flex-col items-center justify-center gap-4 ${frameBg} px-6 text-center shadow-none md:my-8 md:min-h-[calc(100vh-4rem)] md:rounded-[36px] md:shadow-lg`}>
           <p className={chatStyleFromUrl === "tiktok" ? "text-gray-300" : "text-gray-600"}>
-            캐릭터 정보가 없어요. 캐릭터 선택에서 프로필을 만든 뒤 다시 시도해 주세요.
+            {language === "en"
+              ? "No character info found. Please create a profile in Character Selection and try again."
+              : "캐릭터 정보가 없어요. 캐릭터 선택에서 프로필을 만든 뒤 다시 시도해 주세요."}
           </p>
           <Link
             href="/characters"
             className="rounded-full bg-gradient-to-br from-purple-500 to-fuchsia-600 px-6 py-2.5 text-sm font-semibold text-white"
           >
-            캐릭터 선택으로
+            {language === "en" ? "Go to Characters" : "캐릭터 선택으로"}
           </Link>
         </div>
       </div>
@@ -100,6 +106,7 @@ export function CustomChatClient() {
           characterMbti={data.mbti}
           characterHandle="custom"
           characterImageSrc={data.imagePreviewUrl}
+          characterGender={data.gender}
           characterDescription={data.description}
           characterBodyInfo={{
             height: data.height,
@@ -107,6 +114,7 @@ export function CustomChatClient() {
           }}
           identityVariant={identityFromUrl ?? data.identity ?? null}
           chatStyle={chatStyleFromUrl ?? data.chatStyle ?? "instagram"}
+          language={language}
         />
       </div>
     </div>

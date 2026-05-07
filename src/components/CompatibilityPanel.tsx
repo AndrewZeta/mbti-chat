@@ -1,14 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useLanguage } from "@/src/components/LanguageProvider";
 import {
   getCompatibility,
   mbtiTypes,
   type CompatibilityResult,
   type MbtiType,
 } from "@/src/data/compatibility";
+import TEXT from "@/src/lib/text";
 
-const genders = ["여성", "남성"] as const;
+const genders = ["female", "male"] as const;
 
 function MetricBar({ label, value }: { label: string; value: number }) {
   return (
@@ -28,12 +30,14 @@ function MetricBar({ label, value }: { label: string; value: number }) {
 }
 
 export function CompatibilityPanel() {
+  const { language } = useLanguage();
+  const t = TEXT[language];
   const [myName, setMyName] = useState("");
   const [myMbti, setMyMbti] = useState<MbtiType>("INFP");
-  const [myGender, setMyGender] = useState<(typeof genders)[number]>("여성");
+  const [myGender, setMyGender] = useState<(typeof genders)[number]>("female");
   const [partnerName, setPartnerName] = useState("");
   const [partnerMbti, setPartnerMbti] = useState<MbtiType>("ENFP");
-  const [partnerGender, setPartnerGender] = useState<(typeof genders)[number]>("남성");
+  const [partnerGender, setPartnerGender] = useState<(typeof genders)[number]>("male");
   const [result, setResult] = useState<CompatibilityResult | null>(null);
 
   const pairTitle = useMemo(() => `${myMbti} + ${partnerMbti}`, [myMbti, partnerMbti]);
@@ -41,13 +45,13 @@ export function CompatibilityPanel() {
   return (
     <div className="mx-auto w-full max-w-[720px] space-y-6">
       <section className="rounded-3xl border border-pink-100 bg-white p-5 shadow-sm dark:border-pink-900/40 dark:bg-zinc-900 sm:p-6">
-        <h3 className="text-base font-semibold text-rose-950 dark:text-rose-100">내 정보</h3>
+        <h3 className="text-base font-semibold text-rose-950 dark:text-rose-100">{t.myInfo}</h3>
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
           <input
             type="text"
             value={myName}
             onChange={(e) => setMyName(e.target.value)}
-            placeholder="내 이름"
+            placeholder={t.myName}
             className="w-full rounded-xl border border-rose-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 dark:border-rose-900 dark:bg-zinc-950 dark:text-zinc-50"
           />
           <select
@@ -68,7 +72,7 @@ export function CompatibilityPanel() {
           >
             {genders.map((g) => (
               <option key={g} value={g}>
-                {g}
+                {g === "male" ? t.male : t.female}
               </option>
             ))}
           </select>
@@ -76,13 +80,13 @@ export function CompatibilityPanel() {
       </section>
 
       <section className="rounded-3xl border border-pink-100 bg-white p-5 shadow-sm dark:border-pink-900/40 dark:bg-zinc-900 sm:p-6">
-        <h3 className="text-base font-semibold text-rose-950 dark:text-rose-100">상대 정보</h3>
+        <h3 className="text-base font-semibold text-rose-950 dark:text-rose-100">{t.partnerInfo}</h3>
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
           <input
             type="text"
             value={partnerName}
             onChange={(e) => setPartnerName(e.target.value)}
-            placeholder="상대 이름"
+            placeholder={t.partnerName}
             className="w-full rounded-xl border border-rose-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 dark:border-rose-900 dark:bg-zinc-950 dark:text-zinc-50"
           />
           <select
@@ -103,7 +107,7 @@ export function CompatibilityPanel() {
           >
             {genders.map((g) => (
               <option key={g} value={g}>
-                {g}
+                {g === "male" ? t.male : t.female}
               </option>
             ))}
           </select>
@@ -114,7 +118,7 @@ export function CompatibilityPanel() {
           onClick={() => setResult(getCompatibility(myMbti, partnerMbti))}
           className="mt-5 w-full rounded-2xl bg-gradient-to-r from-pink-500 to-violet-600 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 sm:text-base"
         >
-          궁합 보기
+          {t.viewResult}
         </button>
       </section>
 
@@ -122,44 +126,50 @@ export function CompatibilityPanel() {
         <section className="space-y-4 rounded-3xl border border-pink-100 bg-white p-5 shadow-sm dark:border-pink-900/40 dark:bg-zinc-900 sm:p-6">
           <div className="flex items-start justify-between gap-3">
             <div>
+              <p className="text-xs font-medium text-rose-600 dark:text-rose-300">
+                {t.compatibilityTitle}
+              </p>
               <p className="text-sm font-medium text-rose-700 dark:text-rose-300">
                 {pairTitle}
               </p>
               <h3 className="mt-1 text-xl font-bold text-zinc-900 dark:text-zinc-50">
-                {result.title}
+                {result.title[language]}
               </h3>
-              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{result.subtitle}</p>
+              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                {result.subtitle[language]}
+              </p>
             </div>
             <div className="shrink-0 rounded-2xl bg-gradient-to-br from-pink-500 to-violet-600 px-4 py-3 text-center text-white">
-              <p className="text-xs">궁합 점수</p>
+              <p className="text-xs">{t.resultScore}</p>
               <p className="text-2xl font-bold">{result.score}</p>
             </div>
           </div>
 
           <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
-            {result.summary}
+            {result.summary[language]}
           </p>
 
           {(myName || partnerName) ? (
             <p className="rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-900/80 dark:bg-rose-950/30 dark:text-rose-200/80">
-              {myName || "나"}({myGender}) ↔ {partnerName || "상대"}({partnerGender})
+              {myName || t.me}({myGender === "male" ? t.male : t.female}) ↔{" "}
+              {partnerName || t.partner}({partnerGender === "male" ? t.male : t.female})
             </p>
           ) : null}
 
           <div className="space-y-3">
-            <MetricBar label="신뢰도" value={result.trust} />
-            <MetricBar label="소통력" value={result.communication} />
-            <MetricBar label="책임감 밸런스" value={result.responsibility} />
-            <MetricBar label="유머 케미" value={result.humor} />
+            <MetricBar label={t.trust} value={result.trust} />
+            <MetricBar label={t.communication} value={result.communication} />
+            <MetricBar label={t.responsibilityBalance} value={result.responsibility} />
+            <MetricBar label={t.humorChemistry} value={result.humor} />
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <article className="rounded-2xl border border-rose-100 bg-rose-50/60 p-4 dark:border-rose-900/30 dark:bg-rose-950/20">
               <h4 className="text-sm font-semibold text-rose-950 dark:text-rose-100">
-                {result.myLoveStyle.title}
+                {result.myLoveStyle.title[language]}
               </h4>
               <ul className="mt-2 space-y-1.5">
-                {result.myLoveStyle.points.map((point, idx) => (
+                {result.myLoveStyle.points[language].map((point, idx) => (
                   <li key={idx} className="text-xs leading-relaxed text-rose-900/80 dark:text-rose-200/80">
                     • {point}
                   </li>
@@ -169,10 +179,10 @@ export function CompatibilityPanel() {
 
             <article className="rounded-2xl border border-violet-100 bg-violet-50/60 p-4 dark:border-violet-900/30 dark:bg-violet-950/20">
               <h4 className="text-sm font-semibold text-violet-950 dark:text-violet-100">
-                {result.partnerLoveStyle.title}
+                {result.partnerLoveStyle.title[language]}
               </h4>
               <ul className="mt-2 space-y-1.5">
-                {result.partnerLoveStyle.points.map((point, idx) => (
+                {result.partnerLoveStyle.points[language].map((point, idx) => (
                   <li key={idx} className="text-xs leading-relaxed text-violet-900/80 dark:text-violet-200/80">
                     • {point}
                   </li>

@@ -1,37 +1,53 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useLanguage } from "@/src/components/LanguageProvider";
 import { LandingChatPreview } from "@/src/components/landing/LandingChatPreview";
 import { getCharacterById } from "@/src/data/characters";
+import TEXT from "@/src/lib/text";
 
 const PREVIEW_IDS = ["entj-seojun", "enfp-haerin", "istp-doyun"] as const;
 
-const FEATURES = [
-  {
-    title: "MBTI 기반 대화",
-    body: "16가지 타입별로 다른 말투와 반응. 진짜 그 사람과 대화하는 듯한 몰입을 느껴보세요.",
-  },
-  {
-    title: "감정 반응",
-    body: "공감, 설렘, 긴장까지. 메시지 하나하나에 캐릭터가 감정으로 답해요.",
-  },
-  {
-    title: "연애 시뮬레이션",
-    body: "부담 없이 대화만으로 연애 리허설. 오늘의 감정을 가볍게 풀어보세요.",
-  },
-];
-
-function CtaButton({ className = "" }: { className?: string }) {
+function CtaButton({
+  className = "",
+  label,
+}: {
+  className?: string;
+  label: string;
+}) {
   return (
     <Link
       href="/characters"
       className={`inline-flex h-12 w-full items-center justify-center rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-base font-semibold text-white shadow-md shadow-pink-200/40 transition hover:opacity-95 dark:shadow-none ${className}`}
     >
-      지금 시작하기
+      {label}
     </Link>
   );
 }
 
 export default function Home() {
+  const { language } = useLanguage();
+  const t = TEXT[language];
+  const features = [
+    { title: t.landingFeature1Title, body: t.landingFeature1Body },
+    { title: t.landingFeature2Title, body: t.landingFeature2Body },
+    { title: t.landingFeature3Title, body: t.landingFeature3Body },
+  ];
+  const previewCopy = {
+    "entj-seojun": {
+      name: t.landingPreviewSeojunName,
+      line: t.landingPreviewSeojunLine,
+    },
+    "enfp-haerin": {
+      name: t.landingPreviewHaerinName,
+      line: t.landingPreviewHaerinLine,
+    },
+    "istp-doyun": {
+      name: t.landingPreviewDoyunName,
+      line: t.landingPreviewDoyunLine,
+    },
+  } as const;
   const previewCharacters = PREVIEW_IDS.map((id) => getCharacterById(id)).filter(
     (c): c is NonNullable<ReturnType<typeof getCharacterById>> => Boolean(c),
   );
@@ -42,23 +58,23 @@ export default function Home() {
         {/* Hero */}
         <section className="text-center">
           <h1 className="text-[1.75rem] font-bold leading-tight tracking-tight text-gray-900 sm:text-3xl dark:text-zinc-50">
-            MBTI로 만나는 연애
+            {t.title}
           </h1>
           <p className="mt-4 text-base leading-relaxed text-gray-600 sm:text-lg dark:text-zinc-400">
-            지금, 너랑 가장 잘 맞는 사람은?
+            {t.landingHeroSubtitle}
           </p>
           <div className="mx-auto mt-10 max-w-[280px]">
-            <CtaButton />
+            <CtaButton label={t.start} />
           </div>
         </section>
 
         {/* Preview cards */}
         <section className="mt-16">
           <h2 className="text-center text-lg font-semibold text-gray-900 dark:text-zinc-100">
-            이런 타입과 대화해요
+            {t.landingPreviewTitle}
           </h2>
           <p className="mt-1 text-center text-sm text-gray-500 dark:text-zinc-500">
-            카드를 눌러 캐릭터를 골라 보세요
+            {t.landingPreviewDesc}
           </p>
           <ul className="mt-6 flex flex-col gap-3">
             {previewCharacters.map((c) => (
@@ -70,7 +86,7 @@ export default function Home() {
                   <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-zinc-800">
                     <Image
                       src={c.image}
-                      alt={c.name}
+                      alt={c.name[language]}
                       fill
                       className="object-cover object-left"
                       sizes="64px"
@@ -79,14 +95,16 @@ export default function Home() {
                   <div className="min-w-0 flex-1 text-left">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-gray-900 dark:text-zinc-50">
-                        {c.name}
+                        {previewCopy[c.id as keyof typeof previewCopy]?.name ??
+                          c.name[language]}
                       </span>
                       <span className="rounded-md bg-purple-50 px-2 py-0.5 text-xs font-bold text-purple-700 dark:bg-purple-950 dark:text-purple-300">
                         {c.mbti}
                       </span>
                     </div>
                     <p className="mt-0.5 line-clamp-2 text-xs text-gray-500 dark:text-zinc-400">
-                      {c.tagline}
+                      {previewCopy[c.id as keyof typeof previewCopy]?.line ??
+                        c.description[language]}
                     </p>
                   </div>
                 </Link>
@@ -98,23 +116,29 @@ export default function Home() {
         {/* Chat preview */}
         <section className="mt-16">
           <h2 className="text-center text-lg font-semibold text-gray-900 dark:text-zinc-100">
-            대화는 이렇게 이어져요
+            {t.landingChatTitle}
           </h2>
           <p className="mt-1 text-center text-sm text-gray-500 dark:text-zinc-500">
-            인스타 DM처럼 익숙한 화면
+            {t.landingChatDesc}
           </p>
           <div className="mt-6">
-            <LandingChatPreview />
+            <LandingChatPreview
+              name={t.landingPreviewHaerinName}
+              message1={t.landingChatMsg1}
+              message2={t.landingChatMsg2}
+              message3={t.landingChatMsg3}
+              placeholder={t.placeholder}
+            />
           </div>
         </section>
 
         {/* Features */}
         <section className="mt-16 rounded-3xl border border-gray-200/80 bg-white p-6 dark:border-gray-800 dark:bg-zinc-900">
           <h2 className="text-center text-lg font-semibold text-gray-900 dark:text-zinc-100">
-            왜 MBTI 연애 시뮬인가요
+            {t.landingFeatureTitle}
           </h2>
           <ul className="mt-6 space-y-5">
-            {FEATURES.map((f, i) => (
+            {features.map((f, i) => (
               <li key={f.title} className="flex gap-3">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-pink-100 to-purple-100 text-sm font-bold text-purple-700 dark:from-pink-950 dark:to-purple-950 dark:text-purple-300">
                   {i + 1}
@@ -135,20 +159,20 @@ export default function Home() {
         {/* Emotional */}
         <section className="mt-16 text-center">
           <p className="text-lg font-medium leading-relaxed text-gray-800 dark:text-zinc-200">
-            밤에 혼자 떠올렸던 그 사람,
+            {t.landingEmotionalLine1}
             <br />
             <span className="text-purple-600 dark:text-purple-400">
-              여기서 한 번 더 만나볼 수 있어요.
+              {t.landingEmotionalLine2}
             </span>
           </p>
           <p className="mt-3 text-sm text-gray-500 dark:text-zinc-500">
-            부담 없이, 지금 이 순간만큼은 대화에만 집중해 보세요.
+            {t.landingEmotionalSub}
           </p>
         </section>
 
         {/* Bottom CTA */}
         <section className="mt-14">
-          <CtaButton />
+          <CtaButton label={t.start} />
         </section>
       </div>
     </div>
