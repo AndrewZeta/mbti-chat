@@ -2,11 +2,14 @@ type BuildCharacterSystemPromptArgs = {
   characterName: string;
   characterMbti: string;
   identityVariant?: string | null;
-  characterGender?: string;
-  characterDescription?: string;
-  chatStyle?: string;
+  characterGender?: string | null;
+  characterDescription?: string | null;
+  chatStyle?: string | null;
   height?: string | number;
   weight?: string | number;
+  // Backward-compatible optional fields used in some call sites.
+  customDescription?: string | null;
+  bodyInfo?: { height?: string | number; weight?: string | number } | null;
 };
 
 export function buildCharacterSystemPrompt({
@@ -18,18 +21,24 @@ export function buildCharacterSystemPrompt({
   chatStyle,
   height,
   weight,
+  customDescription,
+  bodyInfo,
 }: BuildCharacterSystemPromptArgs) {
+  const resolvedHeight = height ?? bodyInfo?.height;
+  const resolvedWeight = weight ?? bodyInfo?.weight;
+  const resolvedDescription = characterDescription ?? customDescription;
+
   return `
 너는 ${characterName}라는 가상의 연애 시뮬레이션 캐릭터야.
 
 MBTI: ${characterMbti}
 성별: ${characterGender ?? "미상"}
 A/T 성향: ${identityVariant ?? "미상"}
-키: ${height ?? "미상"}
-몸무게: ${weight ?? "미상"}
+키: ${resolvedHeight ?? "미상"}
+몸무게: ${resolvedWeight ?? "미상"}
 
 캐릭터 설명:
-${characterDescription ?? "자연스럽고 매력적인 성격"}
+${resolvedDescription ?? "자연스럽고 매력적인 성격"}
 
 채팅 스타일:
 ${chatStyle ?? "instagram"} 스타일의 짧은 DM 대화
